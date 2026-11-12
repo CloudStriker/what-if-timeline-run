@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: #0b0b10;
+  color: #f8fafc;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* <Background> paints its own fill from this variable, so it must be set here. */
+.react-flow.dark {
+  --xy-background-color: #0b0b10;
+}
+
+/* Game feel: CSS only, transform/opacity based, all disabled for reduced motion below. */
+@keyframes node-in {
+  from { opacity: 0; transform: translateY(-16px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+.node-in { animation: node-in 420ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+
+/* The edge "draws" from parent to child; 2000 exceeds any edge length, and the dash ends solid. */
+@keyframes edge-draw {
+  from { stroke-dasharray: 2000; stroke-dashoffset: 2000; }
+  to { stroke-dasharray: 2000; stroke-dashoffset: 0; }
+}
+.edge-in .react-flow__edge-path { animation: edge-draw 600ms ease-out backwards; }
+
+/* Overlay on a node while the agent works on it (separate element so it never replays node-in). */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgb(226 232 240 / 0); }
+  50% { box-shadow: inset 0 0 18px 2px rgb(226 232 240 / 0.3); }
+}
+@keyframes scan {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(450%); }
+}
+.scan-overlay { animation: glow-pulse 1.6s ease-in-out infinite; }
+.scan-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 30%;
+  background: linear-gradient(to bottom, transparent, rgb(226 232 240 / 0.22), transparent);
+  animation: scan 1.6s linear infinite;
+}
+
+@keyframes float-up {
+  from { opacity: 0; transform: translateY(0); }
+  20% { opacity: 1; }
+  to { opacity: 0; transform: translateY(-28px); }
+}
+.float-up { animation: float-up 1.2s ease-out forwards; }
+
+@keyframes pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.badge-pop { animation: pop 450ms ease-out 700ms backwards; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.fade-up { animation: fade-up 300ms ease-out; }
+
+@keyframes blink { 50% { opacity: 0; } }
+.blink { animation: blink 1s steps(2, start) infinite; }
+
+/* Idle motion: opacity/transform on overlays or a few edges only, never box-shadow on many nodes. */
+@keyframes breathe {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+.breathe-overlay {
+  box-shadow: inset 0 0 14px 1px rgb(226 232 240 / 0.4);
+  opacity: 0.7; /* static glow when motion is reduced */
+  animation: breathe 2.5s ease-in-out infinite;
+  will-change: opacity;
+}
+
+@keyframes energy {
+  to { stroke-dashoffset: -19; } /* one dash period (1 + 18) per cycle for a seamless loop */
+}
+.edge-energy {
+  stroke: #e2e8f0;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1 18;
+  animation: energy 1s linear infinite;
+}
+
+@keyframes shimmer {
+  0%, 70% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+.badge-shimmer { position: relative; overflow: hidden; }
+.badge-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgb(15 23 42 / 0.18) 50%, transparent 70%);
+  animation: shimmer 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breathe-overlay, .edge-energy, .badge-shimmer::after { animation: none !important; }
+  .node-in, .edge-in .react-flow__edge-path, .scan-overlay, .scan-overlay::after, .badge-pop, .fade-up, .blink,
+  .react-flow__edge.animated path { animation: none !important; }
+  .float-up { display: none; }
+}
